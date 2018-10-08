@@ -1,0 +1,167 @@
+1建立一个私有节点时常用参数
+--nodiscover 使用这个参数，你的节点就不会被其他人发现，除非手动添加你的节点。否则，就只有一个被无意添加到一个陌生区块链上的可能，那就是跟你有相同的genesis文件和networkID。
+--maxpeers 0 如果你不想有人连上你的测试链，就用maxpeers 0。或者，你可以调整参数，当你确切的知道有几个节点要连接上来的时候。
+--rpc 允许RPC操作你的节点。这个参数在Geth上是默认的。
+--rpcapi "db,eth,net,web3" 这个命令指示了允许通过RPC访问的命令。默认情况下，Geth允许web3。
+--rpcport "8080"
+--rpccorsdomain "http://chriseth.github.io/browser-solidity/"
+--datadir "/home/etherTest" 私有链存放路径（最好跟公有链路径不同）
+--port "30303" 网络监听端口，用来和其他节点手动连接
+--identity “yooliee" 用来标识你的节点的，方便在一大群节点中识别出自己的节点
+--networkid 1990 你自己的私有网络的id号
+--rpccorsdomain "http://chriseth.github.io/browser-solidity/" 指定可以远程访问你的节点的URL， 值为"*"时是指任何地方都可以远程访问（避免使用*）
+
+2本地建立多个节点
+为了能在本地建立多个节点，你必须确保：
+每个节点所在路径不同（–datadir的值不同）
+每个节点运行在不同的端口上（包括eth和rpc) (–port和–rpcport不同）
+ipc端点是唯一的或者禁用ipc接口（–ipcpath唯一或者–ipcdisable
+为了建立一个本地集群，除了上面几个参数值不同以外，必须确保–networkid相同，即节点是属于同一个网络；创世区块相同、集群中的节点必须知道彼此。本测试建立三个节点，然后三个节点彼此相连，形成一个集群。
+
+
+首先，建立一个文件夹，用来存放三个节点：
+
+mkdir ether
+
+所有节点的genesis.json文件必须相同：
+
+
+{
+  "nonce": "0x0000000000000042",
+  "timestamp": "0x0",
+  "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "extraData": "0x0",
+  "gasLimit": "0x80000000",
+  "difficulty": "0x1",
+  "mixhash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "coinbase": "0x3333333333333333333333333333333333333333",
+  "alloc": {     }
+}
+
+2建立第一个节点:
+
+# 在ether目录下创建第一个目录，然后把上面的genesis.json文件复制到此目录下
+$ cd ether
+$ mkdir 01 && cd 01
+# 用genesis.json生成创世区块
+$ geth --datadir ~/block/eth/ether/01 init genesis.json
+# 启动第一个节点
+$ geth --identity "test" --rpc --rpccorsdomain "*" --datadir ~/block/eth/ether/01 --port "30301" --nodiscover --rpcport 8101 --rpcapi "db,eth,net,web3" --networkid 1998 console 2>>/block/eth/ether/01/geth.log
+
+
+>eth.getBlock(0)
+{
+  difficulty: 17179869184,
+  extraData: "0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa",
+  gasLimit: 5000,
+  gasUsed: 0,
+  hash: "0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3",
+  logsBloom: "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+  miner: "0x0000000000000000000000000000000000000000",
+  mixHash: "0x0000000000000000000000000000000000000000000000000000000000000000",
+  nonce: "0x0000000000000042",
+  number: 0,
+  parentHash: "0x0000000000000000000000000000000000000000000000000000000000000000",
+  receiptsRoot: "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
+  sha3Uncles: "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347",
+  size: 540,
+  stateRoot: "0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544",
+  timestamp: 0,
+  totalDifficulty: 17179869184,
+  transactions: [],
+  transactionsRoot: "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
+  uncles: []
+}
+
+>admin.nodeInfo
+
+{
+  enode: "enode://0d6ccbdee3a91881c8432e674e0d5db68f0c5c327ccb00a1f45daafed14e04265316831f17749cfad138d758d8a59013eb1f3933e107da3dc9a3c854c2d71b17@[::]:30301?discport=0",
+  id: "0d6ccbdee3a91881c8432e674e0d5db68f0c5c327ccb00a1f45daafed14e04265316831f17749cfad138d758d8a59013eb1f3933e107da3dc9a3c854c2d71b17",
+  ip: "::",
+  listenAddr: "[::]:30301",
+  name: "Geth/test/v1.8.15-stable-89451f7c/linux-amd64/go1.10",
+  ports: {
+    discovery: 0,
+    listener: 30301
+  },
+  protocols: {
+    eth: {
+      config: {
+        byzantiumBlock: 4370000,
+        chainId: 1,
+        daoForkBlock: 1920000,
+        daoForkSupport: true,
+        eip150Block: 2463000,
+        eip150Hash: "0x2086799aeebeae135c246c65021c82b4e15a2c451340993aacfd2751886514f0",
+        eip155Block: 2675000,
+        eip158Block: 2675000,
+        ethash: {},
+        homesteadBlock: 1150000
+      },
+      difficulty: 17179869184,
+      genesis: "0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3",
+      head: "0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3",
+      network: 1998
+    }
+  }
+}
+
+3建立第二个节点
+
+# 在ether目录下创建第二个目录，然后把上面的genesis.json文件复制到此目录下
+$ cd ether
+$ mkdir 02 && cd 02
+# 用genesis.json生成创世区块
+$ geth --datadir ~/ether/02 init genesis.json
+# 启动第二个节点
+geth --identity "test" --rpc --rpccorsdomain "*" --datadir ~/block/eth/ether/02 --port "30302" --nodiscover --rpcport 8102 --rpcapi "db,eth,net,web3" --networkid 1998 console 2>>/block/eth/ether/02/geth.log
+
+>eth.getBlock(0)
+{
+  difficulty: 17179869184,
+  extraData: "0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa",
+  gasLimit: 5000,
+  gasUsed: 0,
+  hash: "0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3",
+  logsBloom: "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+  miner: "0x0000000000000000000000000000000000000000",
+  mixHash: "0x0000000000000000000000000000000000000000000000000000000000000000",
+  nonce: "0x0000000000000042",
+  number: 0,
+  parentHash: "0x0000000000000000000000000000000000000000000000000000000000000000",
+  receiptsRoot: "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
+  sha3Uncles: "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347",
+  size: 540,
+  stateRoot: "0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544",
+  timestamp: 0,
+  totalDifficulty: 17179869184,
+  transactions: [],
+  transactionsRoot: "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
+  uncles: []
+}
+
+>admin.addPeer("enode://0d6ccbdee3a91881c8432e674e0d5db68f0c5c327ccb00a1f45daafed14e04265316831f17749cfad138d758d8a59013eb1f3933e107da3dc9a3c854c2d71b17@[::]:30301?discport=0")
+true
+>net.peerCount
+1
+
+4同理，创建第三个节点
+
+# 在ether目录下创建第三个目录，然后把上面的genesis.json文件复制到此目录下
+$ cd ether
+$ mkdir 03 && cd 03
+# 用genesis.json生成创世区块
+$ geth --datadir ~/ether/03 init genesis.json
+# 此时03目录中生成了chaindata目录，里面就是存放区块链数据的地方
+# 启动第三个节点
+geth --identity "test" --rpc --rpccorsdomain "*" --datadir ~/block/eth/ether/03 --port "30303" --nodiscover --rpcport 8103 --rpcapi "db,eth,net,web3" --networkid 1998 console 2>>/block/eth/ether/03/geth.log
+
+>admin.addPeer("enode://0d6ccbdee3a91881c8432e674e0d5db68f0c5c327ccb00a1f45daafed14e04265316831f17749cfad138d758d8a59013eb1f3933e107da3dc9a3c854c2d71b17@[::]:30301?discport=0")
+true
+>net.peerCount
+1
+
+可以看见01节点现在有两个节点跟它相连。现在，三个节点相连，形成了一个小的集群，任意一个节点挖矿，挖到区块之后，都会同步到其他的两个节点。
+以上是正确配置集群时用的方法，如果genesis.json文件不相同或者networkid不相同时，都不能添加成功。genesis.json不同，将会生成不一样的创世区块，networkid不同就是两个不同的网络，自然就不能添加成功。
+
